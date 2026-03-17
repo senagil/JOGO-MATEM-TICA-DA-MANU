@@ -3,17 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MATEMÁTICA DA MANU SENA</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4A90E2">
+    <title> MATEMÁTICA DA MANU SENA</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4A90E2;
-            --success: #47D764;
-            --error: #FF5A5F;
-            --warning: #FFB400;
-            --bg: #F0F7FF;
+            --primary: #6C5CE7;
+            --success: #00B894;
+            --error: #D63031;
+            --warning: #FDCB6E;
+            --bg-gradient: linear-gradient(135deg, #6C5CE7 0%, #a29bfe 100%);
             --text: #2D3436;
         }
 
@@ -22,7 +20,7 @@
         body {
             margin: 0;
             font-family: 'Quicksand', sans-serif;
-            background-color: var(--bg);
+            background: var(--bg-gradient);
             color: var(--text);
             display: flex;
             justify-content: center;
@@ -31,149 +29,122 @@
             overflow: hidden;
         }
 
+        /* BG ANIMADO */
+        .bg-elements { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
+        .floating-shape { position: absolute; background: rgba(255, 255, 255, 0.1); border-radius: 50%; animation: float 15s infinite linear; }
+        @keyframes float { from { transform: translateY(100vh) rotate(0deg); } to { transform: translateY(-10vh) rotate(360deg); } }
+
         #game-container {
-            width: 95%;
-            max-width: 500px;
-            background: white;
+            width: 90%; max-width: 450px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 2rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
             text-align: center;
-            position: relative;
+            border: 4px solid white;
         }
 
-        h1 { font-family: 'Fredoka One', cursive; color: var(--primary); margin-bottom: 1rem; font-size: 2rem; }
+        h1 { font-family: 'Fredoka One', cursive; color: var(--primary); font-size: 1.8rem; margin: 10px 0; }
 
-        /* Telas */
-        .screen { display: none; animation: fadeIn 0.5s; }
+        .screen { display: none; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .screen.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* MEDALHAS */
+        .badge-container { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
+        .badge { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; filter: grayscale(1); opacity: 0.3; transition: 0.5s; font-size: 1.5rem; border: 2px solid #ddd; }
+        .badge.unlocked { filter: grayscale(0); opacity: 1; transform: scale(1.1); border-color: gold; box-shadow: 0 0 15px rgba(255,215,0,0.5); }
 
-        /* Menu de Operações */
-        .grid-menu {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
+        /* BOTÕES */
+        .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn { padding: 15px; border: none; border-radius: 18px; font-family: 'Fredoka One', cursive; cursor: pointer; transition: 0.2s; font-size: 1.1rem; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+        .btn:active { transform: translateY(3px); box-shadow: none; }
+        .btn-op { color: white; height: 70px; }
+        .soma { background: #FF7675; } .sub { background: #74B9FF; } .mult { background: #A29BFE; } .divi { background: #FAB1A0; }
+        .btn-back { background: #636e72; color: white; width: 100%; margin-top: 15px; }
 
-        .btn-op {
-            padding: 20px;
-            border: none;
-            border-radius: 20px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            color: white;
-            font-family: 'Fredoka One', cursive;
-        }
-
-        .btn-op:active { transform: scale(0.95); }
-        .soma { background: #FF7675; }
-        .sub { background: #74B9FF; }
-        .mult { background: #A29BFE; }
-        .divi { background: #FAB1A0; }
-
-        /* Área do Jogo */
-        .stats { display: flex; justify-content: space-between; margin-bottom: 20px; font-weight: bold; }
         .question { font-size: 3.5rem; font-family: 'Fredoka One'; margin: 20px 0; color: var(--primary); }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn-ans { padding: 20px; border: 3px solid #EDF2F7; border-radius: 20px; background: white; font-size: 1.8rem; font-weight: 700; cursor: pointer; }
         
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+        #timer-bar { width: 100%; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+        #progress { width: 100%; height: 100%; background: var(--warning); transition: width 0.1s linear; }
 
-        .btn-ans {
-            padding: 25px;
-            border: 4px solid #EDF2F7;
-            border-radius: 25px;
-            background: white;
-            font-size: 1.8rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        /* Animações de Feedback */
-        .correct { background: var(--success) !important; color: white; border-color: #38b353 !important; animation: bounce 0.5s; }
-        .wrong { background: var(--error) !important; color: white; border-color: #d63e43 !important; animation: shake 0.4s; }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        #timer-bar {
-            width: 100%;
-            height: 10px;
-            background: #EED;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        #progress {
-            width: 100%;
-            height: 100%;
-            background: var(--warning);
-            transition: width 0.1s linear;
-        }
-
-        .hidden { display: none; }
+        .correct { background: var(--success) !important; color: white; animation: bounce 0.5s; }
+        .wrong { background: var(--error) !important; color: white; animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
     </style>
 </head>
 <body>
 
+<div class="bg-elements" id="bg-dots"></div>
+
 <div id="game-container">
     <div id="screen-menu" class="screen active">
-        <h1>MATEMÁTICA DA MANU SENA! ⚡</h1>
-        <p>Escolha sua aventura:</p>
+        <h1>MATEMÁTICA DA MANU SENA 🤖</h1>
+        <div class="badge-container">
+            <div id="b-100" class="badge" title="Bronze (100 pts)">🥉</div>
+            <div id="b-300" class="badge" title="Prata (300 pts)">🥈</div>
+            <div id="b-600" class="badge" title="Ouro (600 pts)">🥇</div>
+            <div id="b-1000" class="badge" title="Diamante (1000 pts)">💎</div>
+        </div>
         <div class="grid-menu">
-            <button class="btn-op soma" onclick="startGame('+')">➕ Soma</button>
-            <button class="btn-op sub" onclick="startGame('-')">➖ Sub</button>
-            <button class="btn-op mult" onclick="startGame('*')">✖️ Multi</button>
-            <button class="btn-op divi" onclick="startGame('/')">➗ Divisão</button>
+            <button class="btn btn-op soma" onclick="startGame('+')">➕ Soma</button>
+            <button class="btn btn-op sub" onclick="startGame('-')">➖ Sub</button>
+            <button class="btn btn-op mult" onclick="startGame('*')">✖️ Multi</button>
+            <button class="btn btn-op divi" onclick="startGame('/')">➗ Divi</button>
         </div>
     </div>
 
     <div id="screen-game" class="screen">
-        <div class="stats">
-            <span>Nível: <span id="level">1</span></span>
-            <span>Pontos: <span id="score">0</span></span>
+        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+            <span>⭐ <span id="score">0</span></span>
+            <span>Nível <span id="level">1</span></span>
         </div>
         <div id="timer-bar"><div id="progress"></div></div>
-        <div class="question" id="display-q">2 + 2</div>
-        <div class="options-grid" id="options-container">
-            </div>
+        <div class="question" id="display-q">0 + 0</div>
+        <div class="options-grid" id="options-container"></div>
+        <button class="btn btn-back" onclick="quitGame()">Sair</button>
     </div>
 
     <div id="screen-over" class="screen">
-        <h1>Fim de Jogo! 🏆</h1>
-        <p style="font-size: 1.2rem">Você conseguiu <span id="final-score">0</span> pontos!</p>
-        <button class="btn-op soma" style="width: 100%" onclick="location.reload()">Jogar Novamente</button>
+        <h1>Fim de Jogo!</h1>
+        <p style="font-size: 1.5rem">Score: <strong id="final-score">0</strong></p>
+        <button class="btn soma" style="width: 100%" onclick="showScreen('screen-menu')">Tentar Novamente</button>
     </div>
 </div>
 
 <script>
-    let currentOp = '';
-    let score = 0;
-    let level = 1;
-    let correctAnswer = 0;
-    let timeLeft = 100;
-    let timerInterval;
+    let currentOp = '', score = 0, level = 1, correctAnswer = 0, timeLeft = 100, timerInterval;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // SINTETIZADOR DE SONS
+    function playSound(freq, type, duration) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function soundCorrect() { playSound(880, 'sine', 0.2); }
+    function soundWrong() { playSound(220, 'sawtooth', 0.3); }
+    function soundLevelUp() { 
+        playSound(523, 'sine', 0.1); 
+        setTimeout(() => playSound(659, 'sine', 0.1), 100);
+        setTimeout(() => playSound(783, 'sine', 0.2), 200);
+    }
 
     function startGame(op) {
-        currentOp = op;
-        score = 0;
-        level = 1;
+        currentOp = op; score = 0; level = 1;
+        updateUI();
         showScreen('screen-game');
         nextQuestion();
     }
@@ -181,95 +152,92 @@
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        checkBadges();
     }
 
     function nextQuestion() {
         clearInterval(timerInterval);
         startTimer();
-        
-        // Dificuldade baseada no nível
-        let maxNum = 10 + (level * 5);
-        let n1 = Math.floor(Math.random() * maxNum) + 1;
-        let n2 = Math.floor(Math.random() * maxNum) + 1;
+        let n1, n2, max = 10 + (level * 2);
+        if (currentOp === '+') { n1 = r(1, max); n2 = r(1, max); correctAnswer = n1+n2; }
+        else if (currentOp === '-') { n1 = r(5, max+5); n2 = r(1, n1); correctAnswer = n1-n2; }
+        else if (currentOp === '*') { n1 = r(1, level+2); n2 = r(1, 10); correctAnswer = n1*n2; }
+        else { n2 = r(1, 10); n1 = n2 * r(1, level+2); correctAnswer = n1/n2; }
 
-        if (currentOp === '-') {
-            if (n1 < n2) [n1, n2] = [n2, n1]; // Evita negativos para crianças
-        } else if (currentOp === '/') {
-            n1 = n1 * n2; // Garante divisão exata
-        }
-
-        correctAnswer = eval(`${n1} ${currentOp} ${n2}`);
-        document.getElementById('display-q').innerText = `${n1} ${getSymbol(currentOp)} ${n2}`;
-        
-        generateOptions(correctAnswer);
+        document.getElementById('display-q').innerText = `${n1} ${{'+':'+','-':'-','*':'×','/':'÷'}[currentOp]} ${n2}`;
+        genOptions(correctAnswer);
     }
 
-    function getSymbol(op) {
-        const symbols = {'+':'+', '-':'-', '*': '×', '/': '÷'};
-        return symbols[op];
-    }
+    const r = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-    function generateOptions(correct) {
+    function genOptions(correct) {
         const container = document.getElementById('options-container');
         container.innerHTML = '';
-        let options = [correct];
-
-        while(options.length < 4) {
-            let offset = Math.floor(Math.random() * 10) + 1;
-            let fake = Math.random() > 0.5 ? correct + offset : correct - offset;
-            if (fake >= 0 && !options.includes(fake)) options.push(fake);
+        let opts = new Set([correct]);
+        while(opts.size < 4) {
+            let f = Math.random() > 0.5 ? correct + r(1,5) : correct - r(1,5);
+            if(f >= 0) opts.add(f);
         }
-
-        options.sort(() => Math.random() - 0.5);
-
-        options.forEach(opt => {
+        [...opts].sort(() => Math.random()-0.5).forEach(opt => {
             const btn = document.createElement('button');
-            btn.className = 'btn-ans';
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(opt, btn);
+            btn.className = 'btn-ans'; btn.innerText = opt;
+            btn.onclick = () => {
+                if(opt === correctAnswer) {
+                    btn.classList.add('correct'); soundCorrect();
+                    score += 10; if(score % 50 === 0) { level++; soundLevelUp(); }
+                    updateUI(); setTimeout(nextQuestion, 500);
+                } else {
+                    btn.classList.add('wrong'); soundWrong();
+                    setTimeout(gameOver, 500);
+                }
+            };
             container.appendChild(btn);
         });
     }
 
-    function checkAnswer(selected, btn) {
-        clearInterval(timerInterval);
-        const buttons = document.querySelectorAll('.btn-ans');
-        buttons.forEach(b => b.style.pointerEvents = 'none');
-
-        if (selected === correctAnswer) {
-            btn.classList.add('correct');
-            score += 10;
-            if (score % 50 === 0) level++;
-            document.getElementById('score').innerText = score;
-            document.getElementById('level').innerText = level;
-            setTimeout(nextQuestion, 800);
-        } else {
-            btn.classList.add('wrong');
-            setTimeout(() => {
-                document.getElementById('final-score').innerText = score;
-                showScreen('screen-over');
-            }, 800);
-        }
-    }
-
     function startTimer() {
-        timeLeft = 100;
-        const speed = Math.max(20, 100 - (level * 5)); // Fica mais rápido com o nível
+        let dur = Math.max(2000, 7000 - (level * 400));
+        let start = Date.now();
         timerInterval = setInterval(() => {
-            timeLeft -= 1;
+            timeLeft = 100 - ((Date.now() - start) / dur * 100);
             document.getElementById('progress').style.width = timeLeft + '%';
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                document.getElementById('final-score').innerText = score;
-                showScreen('screen-over');
-            }
-        }, speed);
+            if(timeLeft <= 0) gameOver();
+        }, 50);
     }
 
-    // Registrar Service Worker para PWA
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
+    function gameOver() {
+        clearInterval(timerInterval);
+        document.getElementById('final-score').innerText = score;
+        let highs = JSON.parse(localStorage.getItem('math_high') || '0');
+        if(score > highs) localStorage.setItem('math_high', score);
+        showScreen('screen-over');
     }
+
+    function checkBadges() {
+        let high = JSON.parse(localStorage.getItem('math_high') || '0');
+        [100, 300, 600, 1000].forEach(v => {
+            if(high >= v) document.getElementById(`b-${v}`).classList.add('unlocked');
+        });
+    }
+
+    function updateUI() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('level').innerText = level;
+    }
+
+    function quitGame() { clearInterval(timerInterval); showScreen('screen-menu'); }
+
+    // Criar partículas de fundo
+    for(let i=0; i<10; i++) {
+        let d = document.createElement('div');
+        d.className = 'floating-shape';
+        d.style.left = Math.random()*100+'vw';
+        d.style.width = d.style.height = r(20,50)+'px';
+        d.style.animationDuration = r(10,20)+'s';
+        document.getElementById('bg-dots').appendChild(d);
+    }
+    
+    checkBadges();
 </script>
 </body>
 </html>
