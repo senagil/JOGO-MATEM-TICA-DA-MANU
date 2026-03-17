@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Super Math Adventure</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4A90E2">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --success: #47D764;
+            --error: #FF5A5F;
+            --warning: #FFB400;
+            --bg: #F0F7FF;
+            --text: #2D3436;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 95%;
+            max-width: 500px;
+            background: white;
+            border-radius: 30px;
+            padding: 2rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        h1 { font-family: 'Fredoka One', cursive; color: var(--primary); margin-bottom: 1rem; font-size: 2rem; }
+
+        /* Telas */
+        .screen { display: none; animation: fadeIn 0.5s; }
+        .screen.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Menu de Operações */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-op {
+            padding: 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            color: white;
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .btn-op:active { transform: scale(0.95); }
+        .soma { background: #FF7675; }
+        .sub { background: #74B9FF; }
+        .mult { background: #A29BFE; }
+        .divi { background: #FAB1A0; }
+
+        /* Área do Jogo */
+        .stats { display: flex; justify-content: space-between; margin-bottom: 20px; font-weight: bold; }
+        .question { font-size: 3.5rem; font-family: 'Fredoka One'; margin: 20px 0; color: var(--primary); }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-ans {
+            padding: 25px;
+            border: 4px solid #EDF2F7;
+            border-radius: 25px;
+            background: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        /* Animações de Feedback */
+        .correct { background: var(--success) !important; color: white; border-color: #38b353 !important; animation: bounce 0.5s; }
+        .wrong { background: var(--error) !important; color: white; border-color: #d63e43 !important; animation: shake 0.4s; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        #timer-bar {
+            width: 100%;
+            height: 10px;
+            background: #EED;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        #progress {
+            width: 100%;
+            height: 100%;
+            background: var(--warning);
+            transition: width 0.1s linear;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="screen-menu" class="screen active">
+        <h1>Super Math! ⚡</h1>
+        <p>Escolha sua aventura:</p>
+        <div class="grid-menu">
+            <button class="btn-op soma" onclick="startGame('+')">➕ Soma</button>
+            <button class="btn-op sub" onclick="startGame('-')">➖ Sub</button>
+            <button class="btn-op mult" onclick="startGame('*')">✖️ Multi</button>
+            <button class="btn-op divi" onclick="startGame('/')">➗ Divisão</button>
+        </div>
+    </div>
+
+    <div id="screen-game" class="screen">
+        <div class="stats">
+            <span>Nível: <span id="level">1</span></span>
+            <span>Pontos: <span id="score">0</span></span>
+        </div>
+        <div id="timer-bar"><div id="progress"></div></div>
+        <div class="question" id="display-q">2 + 2</div>
+        <div class="options-grid" id="options-container">
+            </div>
+    </div>
+
+    <div id="screen-over" class="screen">
+        <h1>Fim de Jogo! 🏆</h1>
+        <p style="font-size: 1.2rem">Você conseguiu <span id="final-score">0</span> pontos!</p>
+        <button class="btn-op soma" style="width: 100%" onclick="location.reload()">Jogar Novamente</button>
+    </div>
+</div>
+
+<script>
+    let currentOp = '';
+    let score = 0;
+    let level = 1;
+    let correctAnswer = 0;
+    let timeLeft = 100;
+    let timerInterval;
+
+    function startGame(op) {
+        currentOp = op;
+        score = 0;
+        level = 1;
+        showScreen('screen-game');
+        nextQuestion();
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function nextQuestion() {
+        clearInterval(timerInterval);
+        startTimer();
+        
+        // Dificuldade baseada no nível
+        let maxNum = 10 + (level * 5);
+        let n1 = Math.floor(Math.random() * maxNum) + 1;
+        let n2 = Math.floor(Math.random() * maxNum) + 1;
+
+        if (currentOp === '-') {
+            if (n1 < n2) [n1, n2] = [n2, n1]; // Evita negativos para crianças
+        } else if (currentOp === '/') {
+            n1 = n1 * n2; // Garante divisão exata
+        }
+
+        correctAnswer = eval(`${n1} ${currentOp} ${n2}`);
+        document.getElementById('display-q').innerText = `${n1} ${getSymbol(currentOp)} ${n2}`;
+        
+        generateOptions(correctAnswer);
+    }
+
+    function getSymbol(op) {
+        const symbols = {'+':'+', '-':'-', '*': '×', '/': '÷'};
+        return symbols[op];
+    }
+
+    function generateOptions(correct) {
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        let options = [correct];
+
+        while(options.length < 4) {
+            let offset = Math.floor(Math.random() * 10) + 1;
+            let fake = Math.random() > 0.5 ? correct + offset : correct - offset;
+            if (fake >= 0 && !options.includes(fake)) options.push(fake);
+        }
+
+        options.sort(() => Math.random() - 0.5);
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-ans';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, btn) {
+        clearInterval(timerInterval);
+        const buttons = document.querySelectorAll('.btn-ans');
+        buttons.forEach(b => b.style.pointerEvents = 'none');
+
+        if (selected === correctAnswer) {
+            btn.classList.add('correct');
+            score += 10;
+            if (score % 50 === 0) level++;
+            document.getElementById('score').innerText = score;
+            document.getElementById('level').innerText = level;
+            setTimeout(nextQuestion, 800);
+        } else {
+            btn.classList.add('wrong');
+            setTimeout(() => {
+                document.getElementById('final-score').innerText = score;
+                showScreen('screen-over');
+            }, 800);
+        }
+    }
+
+    function startTimer() {
+        timeLeft = 100;
+        const speed = Math.max(20, 100 - (level * 5)); // Fica mais rápido com o nível
+        timerInterval = setInterval(() => {
+            timeLeft -= 1;
+            document.getElementById('progress').style.width = timeLeft + '%';
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('final-score').innerText = score;
+                showScreen('screen-over');
+            }
+        }, speed);
+    }
+
+    // Registrar Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+</script>
+</body>
+</html>

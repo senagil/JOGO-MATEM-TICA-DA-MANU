@@ -1,0 +1,15 @@
+{
+  "name": "Super Math Adventure",
+  "short_name": "SuperMath",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#F0F7FF",
+  "theme_color": "#4A90E2",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3655/3655581.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
