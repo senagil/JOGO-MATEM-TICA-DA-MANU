@@ -1,13 +1,21 @@
 {
-  "name": "Super Math Adventure",
-  "short_name": "SuperMath",
+  "name": "Matemática da Manu Sena",
+  "short_name": "Manu Math",
+  "description": "Jogo educativo de matemática",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#F0F7FF",
-  "theme_color": "#4A90E2",
+  "background_color": "#6C5CE7",
+  "theme_color": "#6C5CE7",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3655/3655581.png",
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
